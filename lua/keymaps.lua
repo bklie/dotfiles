@@ -30,17 +30,31 @@ keymap('n', '<C-p>', ':Telescope find_files<CR>', { desc = 'Find files (Ctrl-P)'
 
 -- テキスト検索（曖昧検索）
 keymap('n', '<leader>fg', ':Telescope live_grep<CR>', { desc = 'Find text (grep)' })
-keymap('n', '<C-f>', ':Telescope live_grep<CR>', { desc = 'Find text (Ctrl-F)' })
+keymap('n', '<C-S-f>', ':Telescope live_grep<CR>', { desc = 'Find text (Ctrl-Shift-F)' })
+
+-- ビジュアルモードで選択中のテキストで検索（VSCodeライク）
+keymap('v', '<C-S-f>', function()
+    -- 選択中のテキストを取得
+    vim.cmd('noau normal! "vy"')
+    local text = vim.fn.getreg('v')
+    vim.fn.setreg('v', {})
+
+    -- 改行を削除
+    text = string.gsub(text, "\n", "")
+
+    -- Telescopeで検索
+    require('telescope.builtin').live_grep({ default_text = text })
+end, { desc = 'Find selected text (Ctrl-Shift-F)' })
 
 -- バッファ検索
 keymap('n', '<leader>fb', ':Telescope buffers<CR>', { desc = 'Find buffers' })
-keymap('n', '<leader><leader>', ':Telescope buffers<CR>', { desc = 'Find buffers (quick)' })
 
 -- 最近使ったファイル
 keymap('n', '<leader>fr', ':Telescope oldfiles<CR>', { desc = 'Recent files' })
 
 -- カレントファイル内検索
 keymap('n', '<leader>/', ':Telescope current_buffer_fuzzy_find<CR>', { desc = 'Search in current file' })
+keymap('n', '<C-f>', ':Telescope current_buffer_fuzzy_find<CR>', { desc = 'Search in current file (Ctrl-F)' })
 
 -- コマンド履歴
 keymap('n', '<leader>fh', ':Telescope command_history<CR>', { desc = 'Command history' })
@@ -103,9 +117,9 @@ keymap('n', '<C-Right>', ':vertical resize +2<CR>', opts)
 -- バッファ操作
 -- ================================================
 
--- バッファ切り替え（タブで移動）
-keymap('n', '<Tab>', ':BufferLineCycleNext<CR>', { desc = 'Next buffer' })
-keymap('n', '<S-Tab>', ':BufferLineCyclePrev<CR>', { desc = 'Previous buffer' })
+-- バッファ切り替え（bufferline.luaで設定されているため、ここでは定義なし）
+-- Tab: 次のバッファ
+-- Shift-Tab: 前のバッファ
 
 -- バッファを閉じる
 keymap('n', '<leader>bd', ':bdelete<CR>', { desc = 'Delete buffer' })
@@ -149,6 +163,22 @@ keymap('n', '<leader>nh', ':noh<CR>', { desc = 'No highlight' })
 
 -- ファイルツリー（Oil）
 keymap('n', '<leader>e', ':Oil<CR>', { desc = 'Open file explorer' })
+
+-- ================================================
+-- 検索・置換（nvim-spectre）
+-- ================================================
+
+-- プロジェクト全体で検索・置換
+keymap('n', '<leader>sr', '<cmd>lua require("spectre").toggle()<CR>', { desc = 'Toggle Spectre (search & replace)' })
+
+-- カーソル下の単語で検索・置換
+keymap('n', '<leader>sw', '<cmd>lua require("spectre").open_visual({select_word=true})<CR>', { desc = 'Search current word' })
+
+-- カレントファイル内で検索・置換
+keymap('n', '<leader>sf', '<cmd>lua require("spectre").open_file_search({select_word=true})<CR>', { desc = 'Search in current file' })
+
+-- ビジュアルモードで選択したテキストで検索・置換
+keymap('v', '<leader>sw', '<esc><cmd>lua require("spectre").open_visual()<CR>', { desc = 'Search selected text' })
 
 -- Git操作（gitsigns）
 keymap('n', ']c', ':Gitsigns next_hunk<CR>', { desc = 'Next git hunk' })

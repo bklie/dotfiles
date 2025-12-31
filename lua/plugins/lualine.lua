@@ -7,7 +7,8 @@ return {
         config = function()
             -- カスタムコンポーネント
             local function lsp_status()
-                local clients = vim.lsp.get_active_clients({ bufnr = 0 })
+                -- Neovim 0.11+の新しいAPI
+                local clients = vim.lsp.get_clients({ bufnr = 0 })
                 if next(clients) == nil then
                     return ""
                 end
@@ -129,6 +130,18 @@ return {
                     },
                     lualine_c = {
                         {
+                            'filename',
+                            file_status = true,
+                            path = 3, -- 0 = ファイル名のみ, 1 = 相対パス, 2 = 絶対パス, 3 = 絶対パス（ホームディレクトリを~に）
+                            shorting_target = 40,
+                            symbols = {
+                                modified = ' ●',
+                                readonly = ' ',
+                                unnamed = '[No Name]',
+                                newfile = ' ',
+                            }
+                        },
+                        {
                             'diagnostics',
                             sources = { 'nvim_lsp' },
                             symbols = { error = ' ', warn = ' ', info = ' ', hint = ' ' },
@@ -203,42 +216,7 @@ return {
                     lualine_y = {},
                     lualine_z = {}
                 },
-                tabline = {
-                    lualine_a = {
-                        {
-                            get_project_root,
-                            gui = 'bold',
-                        }
-                    },
-                    lualine_b = {
-                        {
-                            'filename',
-                            file_status = true,
-                            path = 1, -- 相対パス
-                            shorting_target = 40,
-                            symbols = {
-                                modified = ' ●',
-                                readonly = ' ',
-                                unnamed = '[No Name]',
-                                newfile = ' ',
-                            }
-                        },
-                    },
-                    lualine_c = {
-                        {
-                            filesize,
-                            color = { fg = '#98c379' },
-                        },
-                    },
-                    lualine_x = {},
-                    lualine_y = {},
-                    lualine_z = {
-                        {
-                            'tabs',
-                            mode = 1,
-                        }
-                    }
-                },
+                tabline = {},
                 winbar = {},
                 inactive_winbar = {},
                 extensions = {

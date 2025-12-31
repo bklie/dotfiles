@@ -4,9 +4,10 @@
 
 ## 必要要件
 
-- Neovim 0.11+
+- Neovim 0.11+（**重要**: 0.11以上が必須）
 - Git
 - Node.js（LSPサーバー用）
+- ripgrep（検索・置換用: `brew install ripgrep`）
 - [WezTerm](https://wezfurlong.org/wezterm/)（推奨ターミナルエミュレーター）
 - [JetBrains Mono](https://www.jetbrains.com/lp/mono/) フォント
 
@@ -56,6 +57,7 @@ nvim
 
 ### 検索・ナビゲーション
 - **telescope.nvim**: ファジーファインダー（ファイル・テキスト検索）
+- **nvim-spectre**: プロジェクト全体の検索・置換ツール
 - **plenary.nvim**: Telescope依存ライブラリ
 
 ### 編集支援
@@ -87,7 +89,8 @@ nvim
 |------|------|----------|
 | `jj` | インサートモードを抜ける（Escの代わり） | ⭐⭐⭐⭐⭐ |
 | `Ctrl-p` | ファイル検索 | ⭐⭐⭐⭐⭐ |
-| `Ctrl-f` | テキスト検索（grep） | ⭐⭐⭐⭐⭐ |
+| `Ctrl-f` | カレントファイル内検索 | ⭐⭐⭐⭐⭐ |
+| `Ctrl-Shift-f` | プロジェクト全体検索 | ⭐⭐⭐⭐⭐ |
 | `<space>w` | ファイル保存 | ⭐⭐⭐⭐⭐ |
 | `<space>q` | 終了 | ⭐⭐⭐⭐ |
 | `Ctrl-/` | ターミナルのトグル | ⭐⭐⭐⭐ |
@@ -126,17 +129,33 @@ nvim
 | キー | モード | 説明 |
 |------|--------|------|
 | `<space>ff` / `Ctrl-p` | Normal | ファイル検索 |
-| `<space>fg` / `Ctrl-f` | Normal | テキスト検索（grep） |
+| `<space>fg` / `Ctrl-Shift-f` | Normal | プロジェクト全体検索（grep） |
+| `Ctrl-Shift-f` | Visual | 選択テキストでプロジェクト全体検索 |
 | `<space>fb` | Normal | バッファ検索 |
-| `<space><space>` | Normal | バッファ検索（クイック） |
 | `<space>fr` | Normal | 最近使ったファイル |
-| `<space>/` | Normal | カレントファイル内検索 |
+| `<space>/` / `Ctrl-f` | Normal | カレントファイル内検索 |
 | `<space>fh` | Normal | コマンド履歴 |
 | `<space>fH` | Normal | ヘルプ検索 |
 | `<space>th` | Normal | カラーテーマピッカー |
 | `<space>fs` | Normal | ファイル内シンボル検索 |
 | `<space>fS` | Normal | ワークスペース内シンボル検索 |
 | `<space>fd` | Normal | 診断情報検索 |
+
+### 検索・置換（nvim-spectre）
+
+| キー | モード | 説明 |
+|------|--------|------|
+| `<space>sr` | Normal | Spectreを開く（プロジェクト全体） |
+| `<space>sw` | Normal | カーソル下の単語で検索・置換 |
+| `<space>sw` | Visual | 選択テキストで検索・置換 |
+| `<space>sf` | Normal | カレントファイル内で検索・置換 |
+
+**Spectre内のキーマップ:**
+- `dd`: この行を除外
+- `Enter`: ファイルを開く
+- `<space>rc`: この行だけ置換
+- `<space>R`: 全て一括置換
+- `<space>o`: オプションメニュー表示
 
 ### LSP操作
 
@@ -160,15 +179,17 @@ nvim
 | `Enter` | Insert | 確定 |
 | `Ctrl-e` | Insert | キャンセル |
 
-### ウィンドウ操作
+### ウィンドウ操作（ペイン操作）
 
 | キー | モード | 説明 |
 |------|--------|------|
-| `Ctrl-h/j/k/l` | Normal | ウィンドウ間移動 |
+| `Ctrl-h/j/k/l` | Normal | ウィンドウ間移動（左/下/上/右） |
 | `<space>sv` | Normal | 縦分割 |
 | `<space>sh` | Normal | 横分割 |
 | `<space>sc` | Normal | ウィンドウを閉じる |
 | `Ctrl-Up/Down/Left/Right` | Normal | ウィンドウサイズ調整 |
+
+**Note**: Neovimでは「ウィンドウ」と呼ばれ、VSCodeの「ペイン」に相当します。
 
 ### バッファ操作
 
@@ -205,6 +226,10 @@ nvim
 | キー | モード | 説明 |
 |------|--------|------|
 | `<space>e` | Normal | ファイルエクスプローラを開く |
+| `-` | Oil内 | 親ディレクトリに移動 |
+| `Enter` | Oil内 | ディレクトリに入る / ファイルを開く |
+| `g?` | Oil内 | ヘルプ表示（全キーマップ） |
+| `g.` | Oil内 | 隠しファイルの表示/非表示 |
 
 ### Git操作（gitsigns）
 
@@ -244,26 +269,22 @@ Masonのウィンドウで、必要なLSPサーバーを検索してインスト
 
 ### 2. lspconfig.luaに設定を追加
 
-`lua/plugins/lspconfig.lua`の`servers`テーブルに新しい言語を追加：
+`lua/plugins/lspconfig.lua`にNeovim 0.11の新しいAPIで言語を追加：
 
 ```lua
-local servers = {
-    lua_ls = {
-        settings = {
-            Lua = {
-                diagnostics = {
-                    globals = { 'vim' }
-                }
-            }
-        }
-    },
-    ts_ls = {},
-    marksman = {},
+-- Python用の例
+vim.lsp.config('pyright', {
+    cmd = { 'pyright-langserver', '--stdio' },
+    root_markers = { 'pyproject.toml', 'setup.py', 'requirements.txt', '.git' },
+    filetypes = { 'python' },
+    on_attach = on_attach,
+    capabilities = capabilities,
+})
 
-    -- 新しい言語を追加（例：Python）
-    pyright = {},
-}
+vim.lsp.enable('pyright')
 ```
+
+**Note**: Neovim 0.11では`vim.lsp.config()`と`vim.lsp.enable()`を使用します。
 
 ### 3. Treesitterサポートを追加（オプション）
 
@@ -282,13 +303,17 @@ ensure_installed = {
 
 ## トラブルシューティング
 
-### LSPが起動しない
+### LSPが起動しない / 遅い
 
 ```vim
 :LspInfo
 ```
 
 LSPの状態を確認。サーバーがインストールされているか、正しく設定されているかを確認してください。
+
+**Lua LSPが遅い場合**:
+- `lua/plugins/lspconfig.lua`で`preloadFileSize = 0`が設定されているか確認
+- ワークスペーススキャンが無効化されているか確認（デフォルトで最適化済み）
 
 ### プラグインの再インストール
 
@@ -338,9 +363,26 @@ echo $TERM
 │       ├── toggleterm.lua       # ターミナル設定
 │       ├── gitsigns.lua         # Git統合設定
 │       ├── colorscheme.lua      # テーマ設定
+│       ├── spectre.lua          # 検索・置換設定
 │       └── ...                  # その他のプラグイン
 └── README.md                    # このファイル
 ```
+
+## 主な最適化ポイント
+
+### LSP起動の高速化
+- Neovim 0.11の新しい`vim.lsp.config()`APIを使用
+- ワークスペーススキャンを無効化（`preloadFileSize = 0`）
+- セマンティックトークンを無効化（Treesitterで代替）
+
+### バッファライン
+- Lualineのtablineを無効化し、Bufferlineのみを使用
+- `Tab`/`Shift-Tab`でバッファ切り替え
+
+### 検索の効率化
+- `Ctrl-f`: カレントファイル内検索
+- `Ctrl-Shift-f`: プロジェクト全体検索
+- ビジュアル選択からの検索に対応
 
 ## ライセンス
 

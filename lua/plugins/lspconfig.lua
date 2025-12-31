@@ -6,6 +6,12 @@ return {
         },
         event = { "BufReadPre", "BufNewFile" },
         config = function()
+            -- すでにロード済みの場合は何もしない
+            if vim.g.lspconfig_loaded then
+                return
+            end
+            vim.g.lspconfig_loaded = true
+
             -- LSP起動時の共通設定
             local on_attach = function(client, bufnr)
                 -- キーマッピング
@@ -26,40 +32,67 @@ return {
             -- LSP共通設定
             local capabilities = require('cmp_nvim_lsp').default_capabilities()
 
-            -- lspconfigを取得
-            local lspconfig = require('lspconfig')
-
-            -- 各言語のLSP設定（追加しやすい構造）
-            local servers = {
-                -- Lua
-                lua_ls = {
-                    settings = {
-                        Lua = {
-                            diagnostics = {
-                                globals = { 'vim' }
-                            },
-                            workspace = {
-                                library = vim.api.nvim_get_runtime_file("", true),
-                                checkThirdParty = false,
-                            },
-                            telemetry = {
-                                enable = false,
-                            },
-                        }
+            -- Neovim 0.11+の新しいAPI
+            -- Lua Language Server
+            vim.lsp.config('lua_ls', {
+                cmd = { 'lua-language-server' },
+                root_markers = { '.luarc.json', '.luarc.jsonc', '.luacheckrc', '.stylua.toml', 'stylua.toml', 'selene.toml', 'selene.yml', '.git' },
+                filetypes = { 'lua' },
+                settings = {
+                    Lua = {
+                        runtime = {
+                            version = 'LuaJIT'
+                        },
+                        diagnostics = {
+                            globals = { 'vim' },
+                            disable = { 'missing-fields' }
+                        },
+                        workspace = {
+                            checkThirdParty = false,
+                            library = {},
+                            ignoreDir = { ".git", "node_modules", ".vscode", ".idea" },
+                            preloadFileSize = 0,
+                        },
+                        telemetry = {
+                            enable = false,
+                        },
+                        completion = {
+                            callSnippet = "Replace"
+                        },
+                        semantic = {
+                            enable = false,
+                        },
+                        hint = {
+                            enable = false,
+                        },
                     }
                 },
-                -- JavaScript/TypeScript
-                ts_ls = {},
-                -- Markdown
-                marksman = {},
-            }
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
 
-            -- 各LSPサーバーをセットアップ
-            for server, config in pairs(servers) do
-                config.on_attach = on_attach
-                config.capabilities = capabilities
-                lspconfig[server].setup(config)
-            end
+            -- TypeScript/JavaScript Language Server
+            vim.lsp.config('ts_ls', {
+                cmd = { 'typescript-language-server', '--stdio' },
+                root_markers = { 'package.json', 'tsconfig.json', 'jsconfig.json', '.git' },
+                filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- Markdown Language Server
+            vim.lsp.config('marksman', {
+                cmd = { 'marksman', 'server' },
+                root_markers = { '.marksman.toml', '.git' },
+                filetypes = { 'markdown', 'markdown.mdx' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- 各ファイルタイプでLSPを自動起動
+            vim.lsp.enable('lua_ls')
+            vim.lsp.enable('ts_ls')
+            vim.lsp.enable('marksman')
         end
     },
 }
