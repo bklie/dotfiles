@@ -8,8 +8,13 @@ return {
                     mode = "buffers",
                     separator_style = "slant",
                     always_show_bufferline = true,
-                    show_buffer_close_icons = false,
+                    show_buffer_close_icons = true,  -- バツマーク表示
                     show_close_icon = false,
+                    close_icon = '󰅖',
+                    buffer_close_icon = '󰅖',
+                    modified_icon = '●',
+                    left_trunc_marker = '',
+                    right_trunc_marker = '',
                     color_icons = true,
                     diagnostics = "nvim_lsp",
                     diagnostics_indicator = function(count, level)
@@ -22,8 +27,19 @@ return {
                             text = "File Explorer",
                             highlight = "Directory",
                             text_align = "left"
+                        },
+                        {
+                            filetype = "oil",
+                            text = "File Explorer",
+                            highlight = "Directory",
+                            text_align = "left"
                         }
                     },
+                    -- マウスクリックでバッファを閉じる
+                    close_command = "bdelete! %d",
+                    right_mouse_command = "bdelete! %d",
+                    left_mouse_command = "buffer %d",
+                    middle_mouse_command = nil,
                 },
             })
 

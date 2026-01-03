@@ -89,10 +89,163 @@ return {
                 capabilities = capabilities,
             })
 
+            -- Python Language Server
+            vim.lsp.config('pyright', {
+                cmd = { 'pyright-langserver', '--stdio' },
+                root_markers = { 'pyproject.toml', 'setup.py', 'setup.cfg', 'requirements.txt', 'Pipfile', '.git' },
+                filetypes = { 'python' },
+                settings = {
+                    python = {
+                        analysis = {
+                            autoSearchPaths = true,
+                            useLibraryCodeForTypes = true,
+                            diagnosticMode = 'openFilesOnly',
+                        }
+                    }
+                },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- PHP Language Server
+            vim.lsp.config('intelephense', {
+                cmd = { 'intelephense', '--stdio' },
+                root_markers = { 'composer.json', '.git' },
+                filetypes = { 'php' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- HTML Language Server
+            vim.lsp.config('html', {
+                cmd = { 'vscode-html-language-server', '--stdio' },
+                root_markers = { 'package.json', '.git' },
+                filetypes = { 'html', 'htmldjango' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- YAML Language Server
+            vim.lsp.config('yamlls', {
+                cmd = { 'yaml-language-server', '--stdio' },
+                root_markers = { '.git' },
+                filetypes = { 'yaml', 'yaml.docker-compose', 'yaml.gitlab' },
+                settings = {
+                    yaml = {
+                        schemas = {
+                            ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
+                            ["https://raw.githubusercontent.com/compose-spec/compose-spec/master/schema/compose-spec.json"] = "docker-compose*.yml",
+                        }
+                    }
+                },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- Docker Language Server
+            vim.lsp.config('dockerls', {
+                cmd = { 'docker-langserver', '--stdio' },
+                root_markers = { 'Dockerfile', '.git' },
+                filetypes = { 'dockerfile' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- Docker Compose Language Server
+            vim.lsp.config('docker_compose_language_service', {
+                cmd = { 'docker-compose-langserver', '--stdio' },
+                root_markers = { 'docker-compose.yml', 'docker-compose.yaml', '.git' },
+                filetypes = { 'yaml.docker-compose' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- Nginx Language Server
+            vim.lsp.config('nginx_language_server', {
+                cmd = { 'nginx-language-server' },
+                root_markers = { 'nginx.conf', '.git' },
+                filetypes = { 'nginx' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- SQL Language Server
+            vim.lsp.config('sqls', {
+                cmd = { 'sqls' },
+                root_markers = { '.git' },
+                filetypes = { 'sql', 'mysql' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- SCSS/Sass Language Server
+            vim.lsp.config('somesass_ls', {
+                cmd = { 'some-sass-language-server', '--stdio' },
+                root_markers = { 'package.json', '.git' },
+                filetypes = { 'scss', 'sass' },
+                on_attach = on_attach,
+                capabilities = (function()
+                    local caps = vim.tbl_deep_extend('force', {}, capabilities)
+                    -- スニペットサポートを無効化（nvim-cmpとの互換性問題を回避）
+                    caps.textDocument.completion.completionItem.snippetSupport = false
+                    return caps
+                end)(),
+            })
+
+            -- Emmet Language Server
+            vim.lsp.config('emmet_ls', {
+                cmd = { 'emmet-ls', '--stdio' },
+                root_markers = { 'package.json', '.git' },
+                filetypes = { 'html', 'css', 'scss', 'sass', 'javascriptreact', 'typescriptreact', 'vue' },
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- Biome (JS/TS/JSON formatter & linter)
+            -- Note: Neovim 0.11の新しいAPIとの互換性問題のため、従来の方法を使用
+            local lspconfig = require('lspconfig')
+            lspconfig.biome.setup({
+                cmd = { vim.fn.expand('~/.local/share/nvim/mason/bin/biome'), 'lsp-proxy' },
+                filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'json', 'jsonc' },
+                root_dir = function(fname)
+                    -- ファイルのディレクトリを常にルートとする
+                    return vim.fn.fnamemodify(fname, ':h')
+                end,
+                single_file_support = true,
+                on_attach = on_attach,
+                capabilities = capabilities,
+            })
+
+            -- Ruff (Python linter & formatter)
+            vim.lsp.config('ruff', {
+                cmd = { vim.fn.expand('~/.local/share/nvim/mason/bin/ruff'), 'server', '--preview' },
+                root_markers = {},  -- 空にすることで常に起動
+                filetypes = { 'python' },
+                on_attach = function(client, bufnr)
+                    -- Pyrightとの競合を避けるため、Ruffはhoverを無効化
+                    client.server_capabilities.hoverProvider = false
+                    on_attach(client, bufnr)
+                end,
+                capabilities = capabilities,
+                single_file_support = true,
+            })
+
             -- 各ファイルタイプでLSPを自動起動
             vim.lsp.enable('lua_ls')
             vim.lsp.enable('ts_ls')
             vim.lsp.enable('marksman')
+            vim.lsp.enable('pyright')
+            vim.lsp.enable('ruff')
+            vim.lsp.enable('intelephense')
+            vim.lsp.enable('html')
+            vim.lsp.enable('yamlls')
+            vim.lsp.enable('dockerls')
+            vim.lsp.enable('docker_compose_language_service')
+            vim.lsp.enable('nginx_language_server')
+            vim.lsp.enable('sqls')
+            vim.lsp.enable('somesass_ls')
+            vim.lsp.enable('emmet_ls')
+            -- biomeは従来のsetup()を使用しているためここでは不要
         end
     },
 }

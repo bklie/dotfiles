@@ -77,9 +77,31 @@ nvim
 
 ## 設定されているLSP
 
-- **Lua**: `lua_ls`
-- **JavaScript/TypeScript**: `ts_ls`
-- **Markdown**: `marksman`
+以下のLSPサーバーが設定されています（Mason経由でインストール）：
+
+### プログラミング言語
+- **Lua**: `lua_ls` - Lua言語サーバー
+- **JavaScript/TypeScript**: `ts_ls` - TypeScript言語サーバー
+- **Python**: `pyright` - 型チェック、補完
+- **Python**: `ruff` - 高速リンター・フォーマッター
+- **PHP**: `intelephense` - PHP言語サーバー
+- **Markdown**: `marksman` - Markdownサポート
+
+### Web開発
+- **HTML**: `html` - HTML言語サーバー
+- **CSS/SCSS**: `somesass_ls` - SCSS/Sass言語サーバー
+- **Emmet**: `emmet_ls` - HTMLスニペット展開
+
+### ツール・設定ファイル
+- **JSON**: `biome` - JSON/JSフォーマッター・リンター
+- **YAML**: `yamlls` - YAMLサポート
+- **Docker**: `dockerls` - Dockerfile
+- **Docker Compose**: `docker_compose_language_service`
+- **Nginx**: `nginx_language_server`
+- **SQL**: `sqls` - SQL補完
+
+### 特殊機能
+- **JSDoc/PHPDoc**: ドキュメントコメントのシンタックスハイライト強調表示
 
 ## 🔥 初心者向け：これだけは覚えておけ！
 
@@ -93,11 +115,14 @@ nvim
 | `Ctrl-Shift-f` | プロジェクト全体検索 | ⭐⭐⭐⭐⭐ |
 | `<space>w` | ファイル保存 | ⭐⭐⭐⭐⭐ |
 | `<space>q` | 終了 | ⭐⭐⭐⭐ |
+| `Ctrl-w` | バッファを閉じる | ⭐⭐⭐⭐ |
 | `Ctrl-/` | ターミナルのトグル | ⭐⭐⭐⭐ |
-| `<space>e` | ファイルエクスプローラ | ⭐⭐⭐⭐ |
+| `<space>o` / `-` | ファイルエクスプローラ（Oil） | ⭐⭐⭐⭐ |
+| `<space>e` | エラー・警告の詳細表示 | ⭐⭐⭐⭐ |
 | `Tab` / `Shift-Tab` | バッファ切り替え | ⭐⭐⭐⭐ |
 | `gd` | 定義へジャンプ（LSP） | ⭐⭐⭐⭐ |
 | `K` | ホバー情報表示（LSP） | ⭐⭐⭐⭐ |
+| `]d` / `[d` | 次/前のエラー・警告へ移動 | ⭐⭐⭐⭐ |
 | `gr` | 参照一覧（LSP） | ⭐⭐⭐ |
 
 **Note**: `<space>`はスペースキーです（Leaderキー）
@@ -128,17 +153,16 @@ nvim
 
 | キー | モード | 説明 |
 |------|--------|------|
-| `<space>ff` / `Ctrl-p` | Normal | ファイル検索 |
+| `Ctrl-p` / `<space>fp` | Normal | ファイル検索 |
+| `<space>ff` | Normal | 全バッファ検索（開いているファイルから検索） |
+| `Ctrl-f` | Normal | カレントファイル内検索 |
 | `<space>fg` / `Ctrl-Shift-f` | Normal | プロジェクト全体検索（grep） |
 | `Ctrl-Shift-f` | Visual | 選択テキストでプロジェクト全体検索 |
-| `<space>fb` | Normal | バッファ検索 |
+| `<space>fb` | Normal | バッファ一覧 |
 | `<space>fr` | Normal | 最近使ったファイル |
-| `<space>/` / `Ctrl-f` | Normal | カレントファイル内検索 |
 | `<space>fh` | Normal | コマンド履歴 |
 | `<space>fH` | Normal | ヘルプ検索 |
 | `<space>th` | Normal | カラーテーマピッカー |
-| `<space>fs` | Normal | ファイル内シンボル検索 |
-| `<space>fS` | Normal | ワークスペース内シンボル検索 |
 | `<space>fd` | Normal | 診断情報検索 |
 
 ### 検索・置換（nvim-spectre）
@@ -168,6 +192,17 @@ nvim
 | `<C-k>` | Normal | シグネチャヘルプ |
 | `<space>rn` | Normal | リネーム |
 | `<space>ca` | Normal | コードアクション |
+| `<space>f` | Normal | フォーマット |
+
+### LSP診断（エラー・警告）
+
+| キー | モード | 説明 |
+|------|--------|------|
+| `<space>e` | Normal | 診断の詳細を浮動ウィンドウで表示 |
+| `]d` | Normal | 次の診断へ移動 |
+| `[d` | Normal | 前の診断へ移動 |
+| `<space>q` | Normal | 診断リストを開く |
+| `<space>fd` | Normal | Telescopeで診断を表示 |
 
 ### 補完（nvim-cmp）
 
@@ -197,8 +232,11 @@ nvim
 |------|--------|------|
 | `Tab` | Normal | 次のバッファ |
 | `Shift-Tab` | Normal | 前のバッファ |
+| `Ctrl-w` | Normal | バッファを閉じる（推奨） |
 | `<space>bd` | Normal | バッファを閉じる |
 | `<space>ba` | Normal | 全バッファを閉じる |
+
+**Note**: バッファライン（画面上部のタブ）の `×` ボタンをマウスでクリックしてもバッファを閉じられます。
 
 ### 編集操作
 
@@ -225,9 +263,9 @@ nvim
 
 | キー | モード | 説明 |
 |------|--------|------|
-| `<space>e` | Normal | ファイルエクスプローラを開く |
-| `-` | Oil内 | 親ディレクトリに移動 |
+| `<space>o` / `-` | Normal | Oilを開く（親ディレクトリ） |
 | `Enter` | Oil内 | ディレクトリに入る / ファイルを開く |
+| `-` | Oil内 | 親ディレクトリに移動 |
 | `g?` | Oil内 | ヘルプ表示（全キーマップ） |
 | `g.` | Oil内 | 隠しファイルの表示/非表示 |
 

@@ -24,25 +24,26 @@ keymap('n', '<C-a>', 'ggVG', { desc = 'Select all' })
 -- ファイル検索（Telescope）
 -- ================================================
 
--- ファイル検索（最重要！）
-keymap('n', '<leader>ff', ':Telescope find_files<CR>', { desc = 'Find files' })
+-- ファイル検索
 keymap('n', '<C-p>', ':Telescope find_files<CR>', { desc = 'Find files (Ctrl-P)' })
+keymap('n', '<leader>fp', ':Telescope find_files<CR>', { desc = 'Find files' })
 
--- テキスト検索（曖昧検索）
+-- 全バッファ検索（開いているファイル全体から検索）
+keymap('n', '<leader>ff', ':Telescope live_grep grep_open_files=true<CR>', { desc = 'Find in all buffers' })
+
+-- カレントバッファ内検索
+keymap('n', '<C-f>', ':Telescope current_buffer_fuzzy_find<CR>', { desc = 'Find in current buffer (Ctrl-F)' })
+
+-- プロジェクト全体検索（曖昧検索）
 keymap('n', '<leader>fg', ':Telescope live_grep<CR>', { desc = 'Find text (grep)' })
 keymap('n', '<C-S-f>', ':Telescope live_grep<CR>', { desc = 'Find text (Ctrl-Shift-F)' })
 
--- ビジュアルモードで選択中のテキストで検索（VSCodeライク）
+-- ビジュアルモードで選択中のテキストで検索
 keymap('v', '<C-S-f>', function()
-    -- 選択中のテキストを取得
     vim.cmd('noau normal! "vy"')
     local text = vim.fn.getreg('v')
     vim.fn.setreg('v', {})
-
-    -- 改行を削除
     text = string.gsub(text, "\n", "")
-
-    -- Telescopeで検索
     require('telescope.builtin').live_grep({ default_text = text })
 end, { desc = 'Find selected text (Ctrl-Shift-F)' })
 
@@ -51,10 +52,6 @@ keymap('n', '<leader>fb', ':Telescope buffers<CR>', { desc = 'Find buffers' })
 
 -- 最近使ったファイル
 keymap('n', '<leader>fr', ':Telescope oldfiles<CR>', { desc = 'Recent files' })
-
--- カレントファイル内検索
-keymap('n', '<leader>/', ':Telescope current_buffer_fuzzy_find<CR>', { desc = 'Search in current file' })
-keymap('n', '<C-f>', ':Telescope current_buffer_fuzzy_find<CR>', { desc = 'Search in current file (Ctrl-F)' })
 
 -- コマンド履歴
 keymap('n', '<leader>fh', ':Telescope command_history<CR>', { desc = 'Command history' })
@@ -122,6 +119,7 @@ keymap('n', '<C-Right>', ':vertical resize +2<CR>', opts)
 -- Shift-Tab: 前のバッファ
 
 -- バッファを閉じる
+keymap('n', '<C-w>', ':bdelete<CR>', { desc = 'Delete current buffer (Ctrl-W)' })
 keymap('n', '<leader>bd', ':bdelete<CR>', { desc = 'Delete buffer' })
 keymap('n', '<leader>ba', ':bufdo bd<CR>', { desc = 'Delete all buffers' })
 
@@ -162,7 +160,8 @@ keymap('n', '<leader>d', ':t.<CR>', { desc = 'Duplicate line' })
 keymap('n', '<leader>nh', ':noh<CR>', { desc = 'No highlight' })
 
 -- ファイルツリー（Oil）
-keymap('n', '<leader>e', ':Oil<CR>', { desc = 'Open file explorer' })
+keymap('n', '<leader>o', ':Oil<CR>', { desc = 'Open file explorer (Oil)' })
+keymap('n', '-', ':Oil<CR>', { desc = 'Open parent directory' })
 
 -- ================================================
 -- 検索・置換（nvim-spectre）
@@ -186,3 +185,20 @@ keymap('n', '[c', ':Gitsigns prev_hunk<CR>', { desc = 'Previous git hunk' })
 keymap('n', '<leader>gp', ':Gitsigns preview_hunk<CR>', { desc = 'Preview git hunk' })
 keymap('n', '<leader>gb', ':Gitsigns toggle_current_line_blame<CR>', { desc = 'Toggle git blame' })
 keymap('n', '<leader>gd', ':Gitsigns diffthis<CR>', { desc = 'Git diff' })
+
+-- ================================================
+-- LSP診断（エラー・警告）
+-- ================================================
+
+-- 診断の詳細を浮動ウィンドウで表示
+keymap('n', '<space>e', vim.diagnostic.open_float, { desc = 'Show diagnostic in floating window' })
+
+-- 前/次の診断に移動
+keymap('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic' })
+keymap('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic' })
+
+-- 診断リストを開く
+keymap('n', '<space>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic list' })
+
+-- Telescopeで診断を表示
+keymap('n', '<leader>fd', ':Telescope diagnostics<CR>', { desc = 'Find diagnostics' })
