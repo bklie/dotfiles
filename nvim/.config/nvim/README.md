@@ -101,6 +101,15 @@ stow -D nvim  # シンボリックリンクを削除
 ### ターミナル統合
 - **toggleterm.nvim**: フローティング・分割ターミナル、Lazygit統合
 
+### AI統合
+- **sidekick.nvim**: AI CLIツール統合（Claude Code、Copilot、Gemini等）
+- **im-select.nvim**: 日本語入力自動切替（インサートモード離脱時に英語入力へ）
+
+### ドキュメント・ヘルプ
+- **render-markdown.nvim**: Neovim内でMarkdownをレンダリング表示
+- **markdown-preview.nvim**: ブラウザでMarkdownプレビュー
+- **which-key.nvim**: キーマッピングのヘルプ表示
+
 ### Linter・Formatter
 - **nvim-lint**: 非同期Linter実行
 - **conform.nvim**: フォーマッター統合
@@ -213,8 +222,9 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 | `Ctrl-Shift-f` | プロジェクト全体検索 | ⭐⭐⭐⭐⭐ |
 | `<space>w` | ファイル保存 | ⭐⭐⭐⭐⭐ |
 | `<space>q` | 終了 | ⭐⭐⭐⭐ |
+| `Ctrl-n` | 新規バッファを作成 | ⭐⭐⭐⭐ |
 | `Ctrl-w` | バッファを閉じる | ⭐⭐⭐⭐ |
-| `Ctrl-/` | ターミナルのトグル | ⭐⭐⭐⭐ |
+| `<space>j` | ターミナルのトグル（セッション維持） | ⭐⭐⭐⭐ |
 | `<space>o` / `-` | ファイルエクスプローラ（Oil） | ⭐⭐⭐⭐ |
 | `<space>e` | エラー・警告の詳細表示 | ⭐⭐⭐⭐ |
 | `Tab` / `Shift-Tab` | バッファ切り替え | ⭐⭐⭐⭐ |
@@ -222,6 +232,8 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 | `K` | ホバー情報表示（LSP） | ⭐⭐⭐⭐ |
 | `]d` / `[d` | 次/前のエラー・警告へ移動 | ⭐⭐⭐⭐ |
 | `gr` | 参照一覧（LSP） | ⭐⭐⭐ |
+| `<space>?` | キーマッピングを表示（which-key） | ⭐⭐⭐ |
+| `<space>a` | AI（Sidekick）をトグル | ⭐⭐⭐ |
 
 **Note**: `<space>`はスペースキーです（Leaderキー）
 
@@ -230,9 +242,10 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 1. **ファイルを開く**: `Ctrl-p` でファイル名を検索
 2. **コードを編集**: `jj` でノーマルモードに戻る
 3. **保存**: `<space>w`
-4. **テキストを検索**: `Ctrl-f` でプロジェクト全体から検索
+4. **テキストを検索**: `Ctrl-f` でカレントファイル内検索、`Ctrl-Shift-f` でプロジェクト全体検索
 5. **定義を見る**: カーソルを関数や変数に合わせて `gd`
-6. **ターミナルを開く**: `Ctrl-/`
+6. **ターミナルを開く**: `<space>j`（セッション維持）、`<space>tf`（フローティング）
+7. **キーマップを確認**: `<space>?` で現在のバッファのキーマップを表示
 
 ## 全キーマッピング一覧
 
@@ -241,11 +254,14 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 | キー | モード | 説明 |
 |------|--------|------|
 | `jj` | Insert | インサートモードを抜ける |
-| `<space>w` | Normal | ファイル保存 |
+| `<space>w` | Normal | ファイル保存（無名バッファは名前入力） |
+| `<space>W` | Normal | 名前を付けて保存（常にプロンプト表示） |
 | `<space>q` | Normal | 終了 |
 | `<space>x` | Normal | 保存して終了 |
 | `Ctrl-a` | Normal | 全選択 |
 | `<space>nh` | Normal | 検索ハイライトを消す |
+
+**Note**: 新規バッファで`<space>w`を押すと、保存先パスの入力を求められます（メモ帳のように）。Tabキーでパス補完が可能です。
 
 ### ファイル・テキスト検索（Telescope）
 
@@ -299,7 +315,7 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 | `<space>e` | Normal | 診断の詳細を浮動ウィンドウで表示 |
 | `]d` | Normal | 次の診断へ移動 |
 | `[d` | Normal | 前の診断へ移動 |
-| `<space>q` | Normal | 診断リストを開く |
+| `<space>dl` | Normal | 診断リストを開く |
 | `<space>fd` | Normal | Telescopeで診断を表示 |
 
 ### 補完（nvim-cmp）
@@ -328,6 +344,7 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 
 | キー | モード | 説明 |
 |------|--------|------|
+| `Ctrl-n` | Normal | 新規バッファを作成 |
 | `Tab` | Normal | 次のバッファ |
 | `Shift-Tab` | Normal | 前のバッファ |
 | `Ctrl-w` | Normal | バッファを閉じる（推奨） |
@@ -349,13 +366,15 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 
 | キー | モード | 説明 |
 |------|--------|------|
-| `Ctrl-/` | Normal/Terminal | フローティングターミナルをトグル |
+| `<space>j` | Normal/Terminal | ターミナルをトグル（セッション維持） |
+| `<space>\` | Terminal | ターミナルを縦分割（2つ目のターミナル） |
+| `<space><BS>` | Terminal | ターミナルを閉じる |
 | `<space>tf` | Normal/Terminal | フローティングターミナルをトグル |
-| `<space>ts` | Normal/Terminal | 横分割ターミナルをトグル |
-| `<space>tv` | Normal/Terminal | 縦分割ターミナルをトグル |
 | `<space>gg` | Normal/Terminal | Lazygitをトグル |
 | `Esc` / `jj` | Terminal | ターミナルモードを抜ける |
 | `Ctrl-h/j/k/l` | Terminal | ターミナルからウィンドウ移動 |
+
+**セッション維持機能**: `<space>j`でトグルすると、ターミナルのセッション（実行中のプロセス）が維持されます。`docker compose up`などで起動したサーバーは、ターミナルを閉じても実行を続けます。
 
 ### ファイルエクスプローラ（Oil）
 
@@ -376,6 +395,34 @@ conform.nvimを使用して、各言語に対応したフォーマッターを�
 | `<space>gp` | Normal | Git変更のプレビュー |
 | `<space>gb` | Normal | Git blame表示をトグル |
 | `<space>gd` | Normal | Git diff表示 |
+
+### AI操作（Sidekick）
+
+| キー | モード | 説明 |
+|------|--------|------|
+| `<space>a` | Normal/Terminal | AI（Claude等）をトグル |
+| `<space>as` | Normal | AIツールを選択 |
+| `<space>af` | Normal | 現在のファイルをAIに送信 |
+| `<space>at` | Normal/Visual | 現在のコンテキスト（選択/カーソル位置）をAIに送信 |
+
+**Note**: デフォルトのAIはClaude Codeです。`lua/local_vars.lua`で`vim.g.sidekick_default_cli`を設定すると変更できます。
+
+### Markdownプレビュー
+
+| キー | モード | 説明 |
+|------|--------|------|
+| `<space>mr` | Normal | Neovim内でMarkdownレンダリングをトグル |
+| `<space>mp` | Normal | ブラウザでMarkdownプレビューをトグル |
+
+**Note**: `<space>mr`はNeovim内で見出し・箇条書き・チェックボックス等を装飾表示します。`<space>mp`はブラウザで完全なプレビューを表示します。
+
+### キーマッピングヘルプ（which-key）
+
+| キー | モード | 説明 |
+|------|--------|------|
+| `<space>?` | Normal | バッファローカルのキーマップを表示 |
+
+**Note**: `<space>`キーを押して少し待つと、利用可能なキーマッピングが自動表示されます。
 
 ## カラーテーマの変更
 
@@ -541,6 +588,9 @@ echo $TERM
 ├── lua/
 │   ├── options.lua              # Neovim基本設定
 │   ├── keymaps.lua              # キーマッピング
+│   ├── highlights.lua           # ハイライト設定
+│   ├── local.lua                # ローカル設定（gitignore）
+│   ├── local_vars.lua           # ローカル変数（gitignore）
 │   └── plugins/                 # プラグイン設定
 │       ├── mason.lua            # Mason設定
 │       ├── lspconfig.lua        # LSP設定
@@ -553,7 +603,14 @@ echo $TERM
 │       ├── gitsigns.lua         # Git統合設定
 │       ├── colorscheme.lua      # テーマ設定
 │       ├── spectre.lua          # 検索・置換設定
+│       ├── sidekick.lua         # AI統合 + im-select設定
+│       ├── markdown-preview.lua # Markdownプレビュー設定
+│       ├── which-key.lua        # キーマッピングヘルプ設定
+│       ├── conform.lua          # フォーマッター設定
+│       ├── nvim-lint.lua        # Linter設定
+│       ├── local.lua            # ローカルプラグイン（gitignore）
 │       └── ...                  # その他のプラグイン
+├── linter-configs/              # Linter/Formatter設定ファイル
 └── README.md                    # このファイル
 ```
 

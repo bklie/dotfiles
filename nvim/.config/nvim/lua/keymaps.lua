@@ -12,10 +12,40 @@ local opts = { noremap = true, silent = true }
 -- インサートモードを抜ける
 keymap('i', 'jj', '<Esc>', opts)
 
--- クイックセーブ
-keymap('n', '<leader>w', ':w<CR>', { desc = 'Save file' })
+-- クイックセーブ（無名バッファの場合は名前を付けて保存）
+keymap('n', '<leader>w', function()
+    if vim.fn.expand('%') == '' then
+        -- 無名バッファの場合、ファイル名を入力
+        vim.ui.input({
+            prompt = 'Save as: ',
+            default = vim.fn.getcwd() .. '/',
+            completion = 'file',
+        }, function(input)
+            if input and input ~= '' then
+                vim.cmd('write ' .. vim.fn.fnameescape(input))
+            end
+        end)
+    else
+        vim.cmd('write')
+    end
+end, { desc = 'Save file (prompt if unnamed)' })
 keymap('n', '<leader>q', ':q<CR>', { desc = 'Quit' })
 keymap('n', '<leader>x', ':x<CR>', { desc = 'Save and quit' })
+
+-- 名前を付けて保存（常にプロンプト表示）
+keymap('n', '<leader>W', function()
+    local current = vim.fn.expand('%:p')
+    local default = current ~= '' and current or (vim.fn.getcwd() .. '/')
+    vim.ui.input({
+        prompt = 'Save as: ',
+        default = default,
+        completion = 'file',
+    }, function(input)
+        if input and input ~= '' then
+            vim.cmd('write ' .. vim.fn.fnameescape(input))
+        end
+    end)
+end, { desc = 'Save as (always prompt)' })
 
 -- 全選択
 keymap('n', '<C-a>', 'ggVG', { desc = 'Select all' })
@@ -121,6 +151,9 @@ keymap('n', '<C-Right>', ':vertical resize +2<CR>', opts)
 -- バッファ操作
 -- ================================================
 
+-- 新規バッファを作成
+keymap('n', '<C-n>', ':enew<CR>', { desc = 'Create new buffer (Ctrl-N)' })
+
 -- バッファ切り替え（bufferline.luaで設定されているため、ここでは定義なし）
 -- Tab: 次のバッファ
 -- Shift-Tab: 前のバッファ
@@ -205,7 +238,7 @@ keymap('n', '[d', vim.diagnostic.goto_prev, { desc = 'Go to previous diagnostic'
 keymap('n', ']d', vim.diagnostic.goto_next, { desc = 'Go to next diagnostic' })
 
 -- 診断リストを開く
-keymap('n', '<space>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic list' })
+keymap('n', '<leader>dl', vim.diagnostic.setloclist, { desc = 'Open diagnostic list' })
 
 -- Telescopeで診断を表示
 keymap('n', '<leader>fd', ':Telescope diagnostics<CR>', { desc = 'Find diagnostics' })
