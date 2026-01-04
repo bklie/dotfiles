@@ -2,7 +2,7 @@ return {
     {
         "stevearc/conform.nvim",
         event = { "BufReadPre", "BufNewFile" },
-        cmd = { "ConformInfo", "Format", "FormatInfo" },
+        cmd = { "ConformInfo", "Format", "FormatInfo", "FormatDiff", "FormatOnSaveToggle" },
         keys = {
             {
                 "<leader>cf",
@@ -12,12 +12,63 @@ return {
                 mode = "",
                 desc = "Format buffer",
             },
+            {
+                "<leader>cd",
+                function()
+                    -- 差分のみフォーマット
+                    vim.cmd("FormatDiff")
+                end,
+                mode = "n",
+                desc = "Format changed lines",
+            },
         },
         config = function()
             local conform = require("conform")
 
             -- Mason binディレクトリのパス
             local mason_bin = vim.fn.expand("~/.local/share/nvim/mason/bin/")
+
+            -- 保存時の差分フォーマット設定
+            local format_on_save_enabled = false
+
+            -- Gitで変更された行の範囲を取得
+            local function get_changed_ranges()
+                local filepath = vim.fn.expand("%:p")
+                local bufnr = vim.api.nvim_get_current_buf()
+
+                -- Gitリポジトリ内かチェック
+                local git_dir = vim.fn.system("git -C " .. vim.fn.shellescape(vim.fn.expand("%:p:h")) .. " rev-parse --git-dir 2>/dev/null")
+                if vim.v.shell_error ~= 0 then
+                    return nil
+                end
+
+                -- 新規ファイル（untracked）の場合は全体をフォーマット
+                local is_tracked = vim.fn.system("git ls-files --error-unmatch " .. vim.fn.shellescape(filepath) .. " 2>/dev/null")
+                if vim.v.shell_error ~= 0 then
+                    return nil -- 全体フォーマット
+                end
+
+                -- 変更された行を取得（unified diff形式）
+                local diff_output = vim.fn.system("git diff --unified=0 HEAD -- " .. vim.fn.shellescape(filepath))
+                if diff_output == "" then
+                    return {} -- 変更なし
+                end
+
+                local ranges = {}
+                -- @@ -start,count +start,count @@ の形式をパース
+                for start_line, count in diff_output:gmatch("@@ %-%d+,?%d* %+(%d+),?(%d*) @@") do
+                    local start_num = tonumber(start_line)
+                    local count_num = tonumber(count) or 1
+                    if count_num > 0 then
+                        table.insert(ranges, {
+                            start = { start_num, 0 },
+                            ["end"] = { start_num + count_num - 1, 0 },
+                        })
+                    end
+                end
+
+                return ranges
+            end
 
             conform.setup({
                 formatters_by_ft = {
@@ -118,14 +169,41 @@ return {
                     },
                 },
 
-                -- 保存時に自動フォーマット（無効化、手動で実行）
-                format_on_save = nil,
+                -- 保存時の差分フォーマット
+                format_on_save = function(bufnr)
+                    if not format_on_save_enabled then
+                        return nil
+                    end
+
+                    local ranges = get_changed_ranges()
+
+                    -- 変更なしの場合はスキップ
+                    if ranges and #ranges == 0 then
+                        return nil
+                    end
+
+                    -- 新規ファイルまたはGit外の場合は全体フォーマット
+                    if ranges == nil then
+                        return {
+                            timeout_ms = 3000,
+                            lsp_fallback = true,
+                        }
+                    end
+
+                    -- 変更された範囲のみフォーマット（最初の範囲のみ）
+                    -- Note: conform.nvimは1回の呼び出しで1つの範囲のみ対応
+                    return {
+                        timeout_ms = 3000,
+                        lsp_fallback = true,
+                        range = ranges[1],
+                    }
+                end,
 
                 -- フォーマット通知
                 notify_on_error = true,
             })
 
-            -- 手動フォーマットコマンド
+            -- 手動フォーマットコマンド（バッファ全体）
             vim.api.nvim_create_user_command("Format", function(args)
                 local range = nil
                 if args.count ~= -1 then
@@ -138,12 +216,53 @@ return {
                 require("conform").format({ async = true, lsp_fallback = true, range = range })
             end, { range = true, desc = "Format buffer or range" })
 
+            -- 差分のみフォーマットコマンド
+            vim.api.nvim_create_user_command("FormatDiff", function()
+                local ranges = get_changed_ranges()
+
+                if ranges == nil then
+                    -- Git外または新規ファイル: 全体フォーマット
+                    require("conform").format({ async = true, lsp_fallback = true })
+                    vim.notify("Formatted entire buffer (not in git or new file)", vim.log.levels.INFO)
+                    return
+                end
+
+                if #ranges == 0 then
+                    vim.notify("No changes to format", vim.log.levels.INFO)
+                    return
+                end
+
+                -- 各変更範囲をフォーマット
+                local formatted_count = 0
+                for _, range in ipairs(ranges) do
+                    require("conform").format({
+                        async = false,
+                        lsp_fallback = true,
+                        range = range,
+                    })
+                    formatted_count = formatted_count + 1
+                end
+
+                vim.notify(string.format("Formatted %d changed region(s)", formatted_count), vim.log.levels.INFO)
+            end, { desc = "Format only changed lines (git diff)" })
+
+            -- 保存時フォーマットのトグル
+            vim.api.nvim_create_user_command("FormatOnSaveToggle", function()
+                format_on_save_enabled = not format_on_save_enabled
+                if format_on_save_enabled then
+                    vim.notify("Format on save: ENABLED (diff only)", vim.log.levels.INFO)
+                else
+                    vim.notify("Format on save: DISABLED", vim.log.levels.INFO)
+                end
+            end, { desc = "Toggle format on save" })
+
             -- フォーマッター情報表示コマンド
             vim.api.nvim_create_user_command("FormatInfo", function()
                 local ft = vim.bo.filetype
                 local formatters = conform.list_formatters_for_buffer()
                 vim.notify("Filetype: " .. ft, vim.log.levels.INFO)
                 vim.notify("Formatters: " .. vim.inspect(formatters), vim.log.levels.INFO)
+                vim.notify("Format on save: " .. (format_on_save_enabled and "ENABLED" or "DISABLED"), vim.log.levels.INFO)
             end, { desc = "Show formatter info for current buffer" })
         end,
     },
