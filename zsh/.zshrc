@@ -86,23 +86,26 @@ setopt LIST_PACKED
 # プロンプト設定
 # ================================================
 
-autoload -Uz colors && colors
-autoload -Uz vcs_info
+# Starshipがインストールされている場合はStarshipを使用
+if command -v starship &> /dev/null; then
+    eval "$(starship init zsh)"
+else
+    # フォールバック: シンプルなプロンプト
+    autoload -Uz colors && colors
+    autoload -Uz vcs_info
 
-# Git情報を取得
-zstyle ':vcs_info:*' enable git
-zstyle ':vcs_info:git:*' check-for-changes true
-zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'
-zstyle ':vcs_info:git:*' unstagedstr '%F{red}*%f'
-zstyle ':vcs_info:git:*' formats '%F{cyan}(%b%c%u)%f'
-zstyle ':vcs_info:git:*' actionformats '%F{cyan}(%b|%a%c%u)%f'
+    zstyle ':vcs_info:*' enable git
+    zstyle ':vcs_info:git:*' check-for-changes true
+    zstyle ':vcs_info:git:*' stagedstr '%F{green}+%f'
+    zstyle ':vcs_info:git:*' unstagedstr '%F{red}*%f'
+    zstyle ':vcs_info:git:*' formats '%F{cyan}(%b%c%u)%f'
+    zstyle ':vcs_info:git:*' actionformats '%F{cyan}(%b|%a%c%u)%f'
 
-precmd() { vcs_info }
-setopt PROMPT_SUBST
-
-# プロンプト: カレントディレクトリ + Git情報
-PROMPT='%F{blue}%~%f ${vcs_info_msg_0_}
+    precmd() { vcs_info }
+    setopt PROMPT_SUBST
+    PROMPT='%F{blue}%~%f ${vcs_info_msg_0_}
 %F{white}$%f '
+fi
 
 # ================================================
 # fzf設定
@@ -137,7 +140,7 @@ fi
 
 function ghq-fzf() {
     if ! command -v ghq &> /dev/null || ! command -v fzf &> /dev/null; then
-        echo "ghq or fzf is not installed"
+        zle -M "ghq or fzf is not installed"
         return 1
     fi
 
@@ -146,7 +149,6 @@ function ghq-fzf() {
 
     if [[ -n "$selected_repo" ]]; then
         cd "$selected_repo"
-        zle accept-line
     fi
     zle reset-prompt
 }
@@ -166,7 +168,7 @@ zstyle ':chpwd:*' recent-dirs-default true
 # Ctrl-X: 最近のディレクトリを選択してcd
 function cdr-fzf() {
     if ! command -v fzf &> /dev/null; then
-        echo "fzf is not installed"
+        zle -M "fzf is not installed"
         return 1
     fi
 
@@ -177,7 +179,6 @@ function cdr-fzf() {
         # チルダを展開
         selected_dir="${selected_dir/#\~/$HOME}"
         cd "$selected_dir"
-        zle accept-line
     fi
     zle reset-prompt
 }
@@ -191,27 +192,46 @@ bindkey '^X' cdr-fzf
 # ls
 if command -v eza &> /dev/null; then
     alias ls='eza --icons'
-    alias ll='eza -la --icons'
+    alias ll='eza -alF --icons'
     alias la='eza -a --icons'
     alias lt='eza --tree --icons'
+    alias l='eza -F --icons'
 else
     alias ls='ls --color=auto'
-    alias ll='ls -la'
-    alias la='ls -a'
+    alias ll='ls -alF'
+    alias la='ls -A'
+    alias l='ls -CF'
 fi
 
 # Git
 alias g='git'
-alias gs='git status'
+alias gst='git status'
 alias ga='git add'
+alias gaa='git add -A'
 alias gc='git commit'
+alias gcm='git commit -m'
+alias gca='git commit --amend'
 alias gp='git push'
+alias gpf='git push --force-with-lease'
 alias gl='git pull'
+alias gf='git fetch'
 alias gd='git diff'
+alias gdc='git diff --cached'
 alias gb='git branch'
+alias gba='git branch -a'
 alias gco='git checkout'
 alias gsw='git switch'
+alias gsc='git switch -c'
+alias gm='git merge'
+alias grb='git rebase'
+alias grs='git restore'
+alias grst='git reset'
+alias gs='git stash'
+alias gsp='git stash pop'
+alias gsl='git stash list'
+alias gcp='git cherry-pick'
 alias glog='git log --oneline --graph'
+alias gloga='git log --oneline --graph --all'
 
 # Docker
 alias d='docker'
@@ -222,6 +242,7 @@ alias dcl='docker compose logs -f'
 alias dps='docker ps'
 
 # Neovim
+alias n='nvim'
 alias v='nvim'
 alias vi='nvim'
 alias vim='nvim'
@@ -232,7 +253,23 @@ alias ...='cd ../..'
 alias ....='cd ../../..'
 alias c='clear'
 alias h='history'
+alias sz='source ~/.zshrc'
 alias reload='source ~/.zshrc'
+
+# 便利系
+alias cp='cp -i'
+alias mv='mv -i'
+alias rm='rm -i'
+alias mkdir='mkdir -p'
+alias df='df -h'
+alias du='du -h'
+alias grep='grep --color=auto'
+alias less='less -R'
+alias path='echo $PATH | tr ":" "\n"'
+alias now='date +"%Y-%m-%d %H:%M:%S"'
+alias week='date +%V'
+alias myip='curl -s ifconfig.me'
+alias ports='lsof -i -P -n | grep LISTEN'
 
 # ================================================
 # 関数
