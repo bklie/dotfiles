@@ -57,4 +57,3 @@ local keymap = vim.keymap.set
 -- })
 -- vim.lsp.enable('custom_lsp')
 
-print("Local config loaded")
