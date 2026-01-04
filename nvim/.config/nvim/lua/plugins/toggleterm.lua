@@ -97,7 +97,7 @@ return {
             end
 
             -- キーマッピング設定（ノーマルモードとターミナルモードの両方）
-            vim.keymap.set({'n', 't'}, '<C-/>', '<cmd>lua _FLOAT_TERM_TOGGLE()<CR>', { desc = 'Toggle floating terminal' })
+            vim.keymap.set({'n', 't'}, '<leader>j', '<cmd>lua _FLOAT_TERM_TOGGLE()<CR>', { desc = 'Toggle floating terminal' })
             vim.keymap.set({'n', 't'}, '<leader>tf', '<cmd>lua _FLOAT_TERM_TOGGLE()<CR>', { desc = 'Toggle floating terminal' })
             vim.keymap.set({'n', 't'}, '<leader>ts', '<cmd>lua _HORIZONTAL_TERM_TOGGLE()<CR>', { desc = 'Toggle horizontal terminal' })
             vim.keymap.set({'n', 't'}, '<leader>tv', '<cmd>lua _VERTICAL_TERM_TOGGLE()<CR>', { desc = 'Toggle vertical terminal' })

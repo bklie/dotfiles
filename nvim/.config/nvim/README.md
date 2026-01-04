@@ -2,10 +2,30 @@
 
 個人用のNeovim設定ファイルです。LSP、補完、ファジーファインダー、Git統合などを含む、モダンで使いやすいNeovim環境を提供します。
 
+## ディレクトリ構成
+
+このリポジトリはGNU Stowを使用したdotfiles管理構成になっています。
+
+```
+dotfiles/
+└── nvim/
+    └── .config/
+        └── nvim/
+            ├── init.lua
+            ├── lua/
+            │   ├── options.lua
+            │   ├── keymaps.lua
+            │   ├── highlights.lua
+            │   └── plugins/
+            ├── linter-configs/
+            └── after/
+```
+
 ## 必要要件
 
 - Neovim 0.11+（**重要**: 0.11以上が必須）
 - Git
+- GNU Stow（`brew install stow`）
 - Node.js（LSPサーバー用）
 - ripgrep（検索・置換用: `brew install ripgrep`）
 - [WezTerm](https://wezfurlong.org/wezterm/)（推奨ターミナルエミュレーター）
@@ -14,18 +34,28 @@
 ## インストール
 
 ```bash
-# 設定をクローン
-git clone <your-repo-url> ~/.config/nvim
+# dotfilesリポジトリをクローン
+git clone <your-repo-url> ~/dotfiles
+
+# stowでシンボリックリンクを作成
+cd ~/dotfiles
+stow nvim
 
 # WezTermのインストール（推奨）
 brew install --cask wezterm
 
 # JetBrains Monoフォントのインストール
-brew tap homebrew/cask-fonts
 brew install --cask font-jetbrains-mono
 
 # Neovimを起動（初回起動時に自動的にプラグインがインストールされます）
 nvim
+```
+
+### アンインストール
+
+```bash
+cd ~/dotfiles
+stow -D nvim  # シンボリックリンクを削除
 ```
 
 ## インストール済みプラグイン
