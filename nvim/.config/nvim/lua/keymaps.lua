@@ -47,8 +47,15 @@ keymap('v', '<C-S-f>', function()
     require('telescope.builtin').live_grep({ default_text = text })
 end, { desc = 'Find selected text (Ctrl-Shift-F)' })
 
--- バッファ検索
-keymap('n', '<leader>fb', ':Telescope buffers<CR>', { desc = 'Find buffers' })
+-- バッファ検索（ターミナルバッファを除外）
+keymap('n', '<leader>fb', function()
+    require("telescope.builtin").buffers({
+        sort_lastused = true,
+        bufnr_filter = function(bufnr)
+            return vim.bo[bufnr].buftype ~= "terminal"
+        end,
+    })
+end, { desc = 'Find buffers' })
 
 -- 最近使ったファイル
 keymap('n', '<leader>fr', ':Telescope oldfiles<CR>', { desc = 'Recent files' })

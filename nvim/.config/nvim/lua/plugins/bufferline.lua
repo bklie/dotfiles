@@ -8,6 +8,13 @@ return {
                     mode = "buffers",
                     separator_style = "slant",
                     always_show_bufferline = true,
+                    -- ターミナルバッファを除外
+                    custom_filter = function(buf_number, _)
+                        if vim.bo[buf_number].buftype == "terminal" then
+                            return false
+                        end
+                        return true
+                    end,
                     show_buffer_close_icons = true,  -- バツマーク表示
                     show_close_icon = false,
                     close_icon = '󰅖',
