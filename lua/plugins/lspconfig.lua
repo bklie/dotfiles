@@ -142,20 +142,11 @@ return {
                 capabilities = capabilities,
             })
 
-            -- Docker Language Server
+            -- Docker Language Server（Dockerfile + Docker Compose対応）
             vim.lsp.config('dockerls', {
                 cmd = { 'docker-langserver', '--stdio' },
-                root_markers = { 'Dockerfile', '.git' },
-                filetypes = { 'dockerfile' },
-                on_attach = on_attach,
-                capabilities = capabilities,
-            })
-
-            -- Docker Compose Language Server
-            vim.lsp.config('docker_compose_language_service', {
-                cmd = { 'docker-compose-langserver', '--stdio' },
-                root_markers = { 'docker-compose.yml', 'docker-compose.yaml', '.git' },
-                filetypes = { 'yaml.docker-compose' },
+                root_markers = { 'Dockerfile', 'docker-compose.yml', 'docker-compose.yaml', '.git' },
+                filetypes = { 'dockerfile', 'yaml.docker-compose' },
                 on_attach = on_attach,
                 capabilities = capabilities,
             })
@@ -201,15 +192,24 @@ return {
                 capabilities = capabilities,
             })
 
+            -- Mason binディレクトリのパス
+            local mason_bin = vim.fn.expand("~/.local/share/nvim/mason/bin/")
+            local linter_config_dir = vim.fn.expand("~/.config/nvim/linter-configs/")
+
             -- Biome (JS/TS/JSON formatter & linter)
             -- Note: Neovim 0.11の新しいAPIとの互換性問題のため、従来の方法を使用
             local lspconfig = require('lspconfig')
             lspconfig.biome.setup({
-                cmd = { vim.fn.expand('~/.local/share/nvim/mason/bin/biome'), 'lsp-proxy' },
+                cmd = { mason_bin .. "biome", 'lsp-proxy' },
                 filetypes = { 'javascript', 'javascriptreact', 'typescript', 'typescriptreact', 'json', 'jsonc' },
                 root_dir = function(fname)
-                    -- ファイルのディレクトリを常にルートとする
-                    return vim.fn.fnamemodify(fname, ':h')
+                    -- プロジェクトにbiome.jsonがあればそちらを優先
+                    local project_root = lspconfig.util.root_pattern('biome.json', 'biome.jsonc')(fname)
+                    if project_root then
+                        return project_root
+                    end
+                    -- なければデフォルト設定ディレクトリをルートとする（biome.jsonがある）
+                    return linter_config_dir
                 end,
                 single_file_support = true,
                 on_attach = on_attach,
@@ -218,7 +218,7 @@ return {
 
             -- Ruff (Python linter & formatter)
             vim.lsp.config('ruff', {
-                cmd = { vim.fn.expand('~/.local/share/nvim/mason/bin/ruff'), 'server', '--preview' },
+                cmd = { mason_bin .. "ruff", 'server', '--preview' },
                 root_markers = {},  -- 空にすることで常に起動
                 filetypes = { 'python' },
                 on_attach = function(client, bufnr)
@@ -239,8 +239,7 @@ return {
             vim.lsp.enable('intelephense')
             vim.lsp.enable('html')
             vim.lsp.enable('yamlls')
-            vim.lsp.enable('dockerls')
-            vim.lsp.enable('docker_compose_language_service')
+            vim.lsp.enable('dockerls')  -- Dockerfile + Docker Compose両方をサポート
             vim.lsp.enable('nginx_language_server')
             vim.lsp.enable('sqls')
             vim.lsp.enable('somesass_ls')

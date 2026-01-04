@@ -1,0 +1,7 @@
+parameters:
+    level: 8
+    paths:
+        - .
+    tmpDir: /tmp/phpstan
+    # プロジェクト固有のphpstan.neonがあればそちらを優先
+    # このファイルはデフォルト設定として使用されます
