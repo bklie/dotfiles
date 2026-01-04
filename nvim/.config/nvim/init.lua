@@ -10,6 +10,16 @@ vim.g.maplocalleader = " "
 vim.opt.termguicolors = true
 
 -- ================================================
+-- ローカル変数の読み込み（プラグイン読み込み前）
+-- ================================================
+-- lua/local_vars.lua が存在する場合のみ読み込み
+-- プラグインの設定に影響する変数（vim.g.*）をここで設定
+local local_vars = vim.fn.stdpath("config") .. "/lua/local_vars.lua"
+if vim.fn.filereadable(local_vars) == 1 then
+    require("local_vars")
+end
+
+-- ================================================
 -- lazy.nvim のセットアップ
 -- ================================================
 

@@ -12,4 +12,5 @@ lazy/
 
 # Local configuration (machine-specific settings)
 lua/local.lua
+lua/local_vars.lua
 lua/plugins/local.lua
