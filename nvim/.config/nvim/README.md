@@ -101,6 +101,10 @@ stow -D nvim  # シンボリックリンクを削除
 ### ターミナル統合
 - **toggleterm.nvim**: フローティング・分割ターミナル、Lazygit統合
 
+### Linter・Formatter
+- **nvim-lint**: 非同期Linter実行
+- **conform.nvim**: フォーマッター統合
+
 ### その他
 - **neoscroll.nvim**: スムーススクロール
 - **nvim-web-devicons**: アイコン表示
@@ -132,6 +136,70 @@ stow -D nvim  # シンボリックリンクを削除
 
 ### 特殊機能
 - **JSDoc/PHPDoc**: ドキュメントコメントのシンタックスハイライト強調表示
+
+## 設定されているLinter
+
+nvim-lintを使用して、各言語に対応したLinterを非同期で実行します。
+
+| 言語 | Linter | 説明 |
+|------|--------|------|
+| PHP | PHPStan | 静的解析（レベル5） |
+| JavaScript/TypeScript | Biome | 高速なリンター |
+| CSS/SCSS | Stylelint | CSSリンター |
+| SQL | SQLFluff | SQLリンター（PostgreSQL方言） |
+| Python | Ruff | 高速なPythonリンター |
+
+**Note**: Biomeは`noVar`ルールなどLSPで検出されないルールをCLI経由で補完します。
+
+### Linterのトリガー
+- **自動実行**: ファイル保存時（`BufWritePost`）、ファイル読み込み時（`BufReadPost`）
+- **手動実行**: `:Lint` コマンド
+
+### Linter設定ファイル
+プロジェクト固有の設定がない場合、以下のデフォルト設定が使用されます：
+- `linter-configs/phpstan.neon` - PHPStan設定
+- `linter-configs/biome.json` - Biome設定
+- `linter-configs/stylelintrc.json` - Stylelint設定
+
+## 設定されているFormatter
+
+conform.nvimを使用して、各言語に対応したフォーマッターを実行します。
+
+| 言語 | Formatter | 説明 |
+|------|-----------|------|
+| Lua | stylua | Luaフォーマッター |
+| PHP | pint | Laravel Pint（PSR-12ベース） |
+| Blade | blade-formatter | Bladeテンプレートフォーマッター |
+| JavaScript/TypeScript | biome, prettier | Biome優先、フォールバックでPrettier |
+| JSON | jq | インデント4スペースで整形 |
+| JSONC | biome, prettier | Biome優先、フォールバックでPrettier |
+| Python | ruff | フォーマット＋import整理 |
+| YAML | yamlfmt | YAMLフォーマッター |
+| SQL | sqlfluff | SQLフォーマッター（PostgreSQL方言） |
+| CSS/SCSS/Sass | prettier | Prettierフォーマッター |
+| HTML | prettier | Prettierフォーマッター |
+| Markdown | prettier | Prettierフォーマッター |
+
+### Formatterコマンド
+
+| コマンド | 説明 |
+|----------|------|
+| `:Format` | バッファ全体をフォーマット（範囲選択にも対応） |
+| `:FormatDiff` | Git差分のある行のみフォーマット |
+| `:FormatOnSaveToggle` | 保存時自動フォーマットの切り替え |
+| `:FormatInfo` | 現在のバッファに適用されるフォーマッター情報を表示 |
+| `:ConformInfo` | conform.nvimの詳細情報を表示 |
+
+### Formatterキーマップ
+
+| キー | モード | 説明 |
+|------|--------|------|
+| `<leader>cf` | Normal/Visual | バッファ全体をフォーマット |
+| `<leader>cd` | Normal | Git差分のある行のみフォーマット |
+
+### Formatter設定ファイル
+プロジェクト固有の設定がない場合、以下のデフォルト設定が使用されます：
+- `linter-configs/pint.json` - Pint設定（Laravelプリセット）
 
 ## 🔥 初心者向け：これだけは覚えておけ！
 
