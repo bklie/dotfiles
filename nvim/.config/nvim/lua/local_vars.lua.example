@@ -17,3 +17,25 @@
 -- デフォルトのAIエージェントを変更（デフォルト: claude）
 -- 利用可能: aider, amazon_q, claude, codex, copilot, crush, cursor, gemini, grok, opencode, qwen
 -- vim.g.sidekick_default_cli = "copilot"
+
+-- ================================================
+-- sqls（SQL Language Server）接続設定
+-- ================================================
+-- データベース接続情報を設定（機密情報のためlocal_vars.luaで管理）
+-- vim.g.sqls_connections = {
+--     {
+--         alias = "local_mysql",
+--         driver = "mysql",
+--         dataSourceName = "user:password@tcp(localhost:3306)/dbname",
+--     },
+--     {
+--         alias = "local_postgres",
+--         driver = "postgresql",
+--         dataSourceName = "host=localhost port=5432 user=user password=pass dbname=mydb sslmode=disable",
+--     },
+--     {
+--         alias = "sqlite_dev",
+--         driver = "sqlite3",
+--         dataSourceName = "/path/to/database.db",
+--     },
+-- }

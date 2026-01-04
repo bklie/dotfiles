@@ -13,6 +13,7 @@ cd ~/dotfiles
 stow nvim      # Neovim
 stow zsh       # Zsh
 stow wezterm   # WezTerm
+stow starship  # Starship prompt
 
 # 設定を無効化
 stow -D nvim
@@ -25,6 +26,7 @@ stow -D nvim
 | `nvim/` | Neovim設定 | [README](nvim/.config/nvim/README.md) |
 | `zsh/` | Zsh設定 | fzf + ghq連携、補完 |
 | `wezterm/` | WezTerm設定 | クロスプラットフォーム対応 |
+| `starship/` | Starship設定 | Gruvboxテーマ |
 
 ## Zsh
 

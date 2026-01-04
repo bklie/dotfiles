@@ -79,6 +79,10 @@ zstyle ':completion:*' list-colors ${(s.:.)LS_COLORS}
 # 補完候補をメニュー選択
 zstyle ':completion:*' menu select
 
+# ~や変数を展開して補完
+zstyle ':completion:*' expand 'yes'
+zstyle ':completion:*' completer _expand _complete _match _approximate
+
 # 補完候補を詰めて表示
 setopt LIST_PACKED
 
@@ -189,18 +193,61 @@ bindkey '^X' cdr-fzf
 # エイリアス
 # ================================================
 
-# ls
+# ls / eza
 if command -v eza &> /dev/null; then
+    # Gruvbox風の落ち着いた配色
+    # メタデータ（パーミッション、サイズ、ユーザー、日付）は白で統一
+    export EZA_COLORS="\
+ur=37:uw=37:ux=37:ue=37:\
+gr=37:gw=37:gx=37:\
+tr=37:tw=37:tx=37:\
+sn=37:sb=37:\
+uu=37:gu=37:\
+da=37:\
+di=38;5;109:\
+fi=38;5;223:\
+ex=38;5;142:\
+ln=38;5;175:\
+or=38;5;167:\
+mi=38;5;167:\
+*.md=38;5;214:\
+*.txt=38;5;223:\
+*.json=38;5;214:\
+*.yaml=38;5;214:\
+*.yml=38;5;214:\
+*.toml=38;5;214:\
+*.lua=38;5;109:\
+*.php=38;5;175:\
+*.js=38;5;214:\
+*.ts=38;5;109:\
+*.vue=38;5;142:\
+*.css=38;5;109:\
+*.scss=38;5;175:\
+*.html=38;5;208:\
+*.sh=38;5;142:\
+*.zsh=38;5;142:\
+*.py=38;5;214:\
+*.go=38;5;109:\
+*.rs=38;5;208:\
+*.sql=38;5;109:\
+*.env=38;5;223:\
+*.log=38;5;246:\
+*.git=38;5;246:\
+*.gitignore=38;5;246"
+
+    # 既存のエイリアスを解除してから関数定義
+    unalias ll la lt l 2>/dev/null
     alias ls='eza --icons'
-    alias ll='eza -alF --icons'
-    alias la='eza -a --icons'
-    alias lt='eza --tree --icons'
-    alias l='eza -F --icons'
+    function ll() { eza -alF --icons "${@:-.}"; }
+    function la() { eza -a --icons "${@:-.}"; }
+    function lt() { eza --tree --icons "${@:-.}"; }
+    function l() { eza -F --icons "${@:-.}"; }
 else
+    unalias ll la l 2>/dev/null
     alias ls='ls --color=auto'
-    alias ll='ls -alF'
-    alias la='ls -A'
-    alias l='ls -CF'
+    function ll() { command ls -alF --color=auto "${@:-.}"; }
+    function la() { command ls -A --color=auto "${@:-.}"; }
+    function l() { command ls -CF --color=auto "${@:-.}"; }
 fi
 
 # Git
@@ -232,6 +279,8 @@ alias gsl='git stash list'
 alias gcp='git cherry-pick'
 alias glog='git log --oneline --graph'
 alias gloga='git log --oneline --graph --all'
+# Gitエイリアスに補完を適用
+compdef g=git ga=git gc=git gd=git gb=git gco=git gsw=git gm=git grb=git grs=git grst=git gcp=git
 
 # Docker
 alias d='docker'
@@ -240,6 +289,7 @@ alias dcu='docker compose up -d'
 alias dcd='docker compose down'
 alias dcl='docker compose logs -f'
 alias dps='docker ps'
+(( $+commands[docker] )) && compdef d=docker 2>/dev/null
 
 # Neovim
 alias n='nvim'

@@ -161,12 +161,18 @@ return {
             })
 
             -- SQL Language Server
+            -- 接続設定は lua/local_vars.lua で vim.g.sqls_connections を設定
             vim.lsp.config('sqls', {
                 cmd = { 'sqls' },
                 root_markers = { '.git' },
                 filetypes = { 'sql', 'mysql' },
                 on_attach = on_attach,
                 capabilities = capabilities,
+                settings = {
+                    sqls = {
+                        connections = vim.g.sqls_connections or {},
+                    },
+                },
             })
 
             -- SCSS/Sass Language Server
