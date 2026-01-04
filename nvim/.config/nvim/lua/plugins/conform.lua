@@ -168,7 +168,7 @@ return {
                         stdin = true,
                     },
                     jq = {
-                        command = "jq",
+                        command = mason_bin .. "jq",
                         args = { "--indent", "4", "." },
                         stdin = true,
                     },
