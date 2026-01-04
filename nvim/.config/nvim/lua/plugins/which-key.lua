@@ -9,6 +9,10 @@ return {
     opts = {
         -- 表示遅延（ミリ秒）
         delay = 300,
+        -- トリガー設定（Visual モードを除外）
+        triggers = {
+            { "<auto>", mode = "nisotc" },  -- "x" (visual) を除外
+        },
         -- アイコン設定
         icons = {
             breadcrumb = ">>",

@@ -203,6 +203,13 @@ keymap('n', '<leader>nh', ':noh<CR>', { desc = 'No highlight' })
 keymap('n', '<leader>o', ':Oil<CR>', { desc = 'Open file explorer (Oil)' })
 keymap('n', '-', ':Oil<CR>', { desc = 'Open parent directory' })
 
+-- 相対パスをクリップボードにコピー
+keymap('n', '<leader>cp', function()
+    local path = vim.fn.expand('%')
+    vim.fn.setreg('+', path)
+    vim.notify('Copied: ' .. path, vim.log.levels.INFO)
+end, { desc = 'Copy relative path to clipboard' })
+
 -- ================================================
 -- 検索・置換（nvim-spectre）
 -- ================================================

@@ -5,52 +5,104 @@ return {
             "nvim-tree/nvim-web-devicons"
         },
         config = function()
-            -- カスタムコンポーネント
-            local function lsp_status()
-                -- Neovim 0.11+の新しいAPI
-                local clients = vim.lsp.get_clients({ bufnr = 0 })
-                if next(clients) == nil then
-                    return ""
-                end
+            -- カラーパレット
+            local colors = {
+                bg = "#1e1e2e",
+                fg = "#cdd6f4",
+                yellow = "#f9e2af",
+                cyan = "#89dceb",
+                green = "#a6e3a1",
+                orange = "#fab387",
+                magenta = "#f5c2e7",
+                blue = "#89b4fa",
+                red = "#f38ba8",
+                violet = "#cba6f7",
+                grey = "#6c7086",
+            }
 
-                local client_names = {}
-                for _, client in pairs(clients) do
-                    table.insert(client_names, client.name)
+            -- モード表示のカスタマイズ
+            local mode_config = {
+                n      = { text = "NORMAL",   color = colors.blue },
+                no     = { text = "O-PENDING", color = colors.blue },
+                nov    = { text = "O-PENDING", color = colors.blue },
+                noV    = { text = "O-PENDING", color = colors.blue },
+                ["no"] = { text = "O-PENDING", color = colors.blue },
+                niI    = { text = "NORMAL",   color = colors.blue },
+                niR    = { text = "NORMAL",   color = colors.blue },
+                niV    = { text = "NORMAL",   color = colors.blue },
+                nt     = { text = "NORMAL",   color = colors.blue },
+                ntT    = { text = "NORMAL",   color = colors.blue },
+                i      = { text = "INSERT",   color = colors.green },
+                ic     = { text = "INSERT",   color = colors.green },
+                ix     = { text = "INSERT",   color = colors.green },
+                s      = { text = "SELECT",   color = colors.magenta },
+                S      = { text = "S-LINE",   color = colors.magenta },
+                [""] = { text = "S-BLOCK",  color = colors.magenta },
+                v      = { text = "VISUAL",   color = colors.violet },
+                V      = { text = "V-LINE",   color = colors.violet },
+                [""] = { text = "V-BLOCK",  color = colors.violet },
+                vs     = { text = "VISUAL",   color = colors.violet },
+                Vs     = { text = "V-LINE",   color = colors.violet },
+                ["s"] = { text = "V-BLOCK",  color = colors.violet },
+                r      = { text = "PROMPT",   color = colors.cyan },
+                ["r?"] = { text = "CONFIRM",  color = colors.cyan },
+                R      = { text = "REPLACE",  color = colors.orange },
+                Rv     = { text = "V-REPLACE", color = colors.orange },
+                Rx     = { text = "REPLACE",  color = colors.orange },
+                Rc     = { text = "REPLACE",  color = colors.orange },
+                c      = { text = "COMMAND",  color = colors.yellow },
+                cv     = { text = "VIM EX",   color = colors.yellow },
+                ce     = { text = "EX",       color = colors.yellow },
+                ["!"]  = { text = "SHELL",    color = colors.red },
+                t      = { text = "TERMINAL", color = colors.red },
+            }
+
+            local function mode_text()
+                local mode = vim.fn.mode()
+                local m = mode_config[mode]
+                if m then
+                    return m.text
                 end
-                return " LSP: " .. table.concat(client_names, ", ")
+                return mode:upper()
             end
 
-            local function filesize()
-                local size = vim.fn.getfsize(vim.fn.expand('%'))
-                if size <= 0 then
-                    return ""
+            local function mode_color()
+                local mode = vim.fn.mode()
+                local m = mode_config[mode]
+                if m then
+                    return { bg = m.color, fg = colors.bg, gui = 'bold' }
                 end
-                local suffixes = {'B', 'KB', 'MB', 'GB'}
-                local i = 1
-                while size > 1024 and i < #suffixes do
-                    size = size / 1024
-                    i = i + 1
-                end
-                return string.format("%.1f%s", size, suffixes[i])
+                return { bg = colors.blue, fg = colors.bg, gui = 'bold' }
             end
 
+            -- インデント情報
             local function indent_info()
                 if vim.bo.expandtab then
-                    return "Spaces: " .. vim.bo.shiftwidth
+                    return "␣" .. vim.bo.shiftwidth
                 else
-                    return "Tab: " .. vim.bo.tabstop
+                    return "⇥" .. vim.bo.tabstop
                 end
             end
 
-            local function get_project_root()
-                local root = vim.fn.fnamemodify(vim.fn.getcwd(), ':~')
-                if #root > 30 then
-                    root = vim.fn.pathshorten(root)
+            -- LSPステータス（シンプル版）
+            local function lsp_status()
+                local clients = vim.lsp.get_clients({ bufnr = 0 })
+                if #clients == 0 then
+                    return ""
                 end
-                return " " .. root
+                local names = {}
+                for _, client in ipairs(clients) do
+                    if client.name ~= "copilot" then
+                        table.insert(names, client.name)
+                    end
+                end
+                if #names == 0 then
+                    return ""
+                end
+                return " " .. table.concat(names, " ")
             end
 
-            -- 検索マッチ数を表示
+            -- 検索マッチ数
             local function search_count()
                 if vim.v.hlsearch == 0 then
                     return ""
@@ -59,31 +111,23 @@ return {
                 if not ok or result.total == 0 then
                     return ""
                 end
-                return string.format(" %d/%d", result.current, result.total)
+                return " " .. result.current .. "/" .. result.total
             end
 
-            -- マクロ録画中の表示
-            local function recording_status()
+            -- マクロ録画中
+            local function macro_recording()
                 local reg = vim.fn.reg_recording()
                 if reg == "" then
                     return ""
                 end
-                return " Recording @" .. reg
+                return " @" .. reg
             end
 
-            -- ビジュアルモードでの選択情報
-            local function selection_count()
-                local mode = vim.fn.mode()
-                if mode:match("[vV]") then
-                    local starts = vim.fn.line("v")
-                    local ends = vim.fn.line(".")
-                    local lines = starts <= ends and ends - starts + 1 or starts - ends + 1
-                    return " " .. lines .. " lines"
-                elseif mode == "" then
-                    local starts = vim.fn.line("v")
-                    local ends = vim.fn.line(".")
-                    local lines = starts <= ends and ends - starts + 1 or starts - ends + 1
-                    return " " .. lines .. "×" .. vim.fn.getpos("'<")[3]
+            -- Lazy更新数
+            local function lazy_updates()
+                local ok, lazy_status = pcall(require, "lazy.status")
+                if ok and lazy_status.has_updates() then
+                    return lazy_status.updates()
                 end
                 return ""
             end
@@ -92,133 +136,135 @@ return {
                 options = {
                     icons_enabled = true,
                     theme = "auto",
-                    component_separators = { left = "", right = "" },
+                    -- バブルスタイルのセパレーター
+                    component_separators = "",
                     section_separators = { left = "", right = "" },
                     disabled_filetypes = {
-                        statusline = { "alpha", "dashboard" },
-                        winbar = {},
+                        statusline = { "alpha", "dashboard", "starter" },
                     },
-                    ignore_focus = {},
-                    always_divide_middle = true,
                     globalstatus = true,
                     refresh = {
                         statusline = 100,
-                        tabline = 100,
-                        winbar = 100,
                     }
                 },
                 sections = {
-                    -- 左側
                     lualine_a = {
                         {
-                            'mode',
-                            fmt = function(str)
-                                return str:sub(1, 1) -- 最初の1文字だけ表示（N, I, Vなど）
-                            end
-                        }
+                            mode_text,
+                            color = mode_color,
+                            padding = { left = 1, right = 1 },
+                        },
                     },
                     lualine_b = {
                         {
                             'branch',
                             icon = '',
+                            color = { fg = colors.magenta, gui = 'bold' },
+                            padding = { left = 1, right = 1 },
                         },
                         {
                             'diff',
                             symbols = { added = ' ', modified = ' ', removed = ' ' },
-                            colored = true,
+                            diff_color = {
+                                added = { fg = colors.green },
+                                modified = { fg = colors.yellow },
+                                removed = { fg = colors.red },
+                            },
+                            padding = { left = 0, right = 1 },
                         },
                     },
                     lualine_c = {
                         {
+                            'filetype',
+                            icon_only = true,
+                            padding = { left = 1, right = 0 },
+                        },
+                        {
                             'filename',
-                            file_status = true,
-                            path = 3, -- 0 = ファイル名のみ, 1 = 相対パス, 2 = 絶対パス, 3 = 絶対パス（ホームディレクトリを~に）
+                            path = 1, -- 相対パス
                             shorting_target = 40,
                             symbols = {
-                                modified = ' ●',
+                                modified = ' ',
                                 readonly = ' ',
                                 unnamed = '[No Name]',
                                 newfile = ' ',
-                            }
+                            },
+                            padding = { left = 0, right = 1 },
                         },
                         {
                             'diagnostics',
                             sources = { 'nvim_lsp' },
-                            symbols = { error = ' ', warn = ' ', info = ' ', hint = ' ' },
-                            colored = true,
+                            symbols = {
+                                error = ' ',
+                                warn = ' ',
+                                info = ' ',
+                                hint = ' ',
+                            },
+                            padding = { left = 1, right = 1 },
                         },
                         {
                             search_count,
-                            color = { fg = '#61afef' },
+                            color = { fg = colors.cyan },
                         },
                         {
-                            recording_status,
-                            color = { fg = '#e06c75', gui = 'bold' },
-                        },
-                        {
-                            selection_count,
-                            color = { fg = '#98c379' },
+                            macro_recording,
+                            color = { fg = colors.red, gui = 'bold' },
                         },
                     },
 
-                    -- 右側
                     lualine_x = {
                         {
+                            lazy_updates,
+                            icon = ' ',
+                            color = { fg = colors.orange },
+                            cond = function()
+                                local ok, lazy_status = pcall(require, "lazy.status")
+                                return ok and lazy_status.has_updates()
+                            end,
+                        },
+                        {
                             lsp_status,
-                            color = { fg = '#61afef' },
+                            color = { fg = colors.blue },
                         },
                         {
                             'encoding',
-                            show_bomb = true,
-                        },
-                        {
-                            'fileformat',
-                            icons_enabled = true,
-                            symbols = {
-                                unix = 'LF',
-                                dos = 'CRLF',
-                                mac = 'CR',
-                            }
-                        },
-                        {
-                            'filetype',
-                            colored = true,
-                            icon_only = false,
+                            cond = function()
+                                return vim.bo.fileencoding ~= '' and vim.bo.fileencoding ~= 'utf-8'
+                            end,
                         },
                         {
                             indent_info,
-                            icon = '',
+                            color = { fg = colors.grey },
                         },
                     },
                     lualine_y = {
                         {
-                            'progress',
+                            'location',
+                            icon = '',
                             padding = { left = 1, right = 1 },
-                        }
+                        },
                     },
                     lualine_z = {
                         {
-                            'location',
+                            'progress',
                             padding = { left = 1, right = 1 },
-                        },
-                        {
-                            function()
-                                return " " .. os.date("%H:%M")
-                            end,
                         },
                     }
                 },
                 inactive_sections = {
                     lualine_a = {},
                     lualine_b = {},
-                    lualine_c = {},
+                    lualine_c = {
+                        {
+                            'filename',
+                            path = 1,
+                            symbols = { modified = ' ', readonly = ' ' },
+                        },
+                    },
                     lualine_x = { 'location' },
                     lualine_y = {},
                     lualine_z = {}
                 },
-                tabline = {},
-                winbar = {},
-                inactive_winbar = {},
                 extensions = {
                     'toggleterm',
                     'lazy',
