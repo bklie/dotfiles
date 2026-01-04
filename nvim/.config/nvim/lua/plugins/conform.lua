@@ -87,8 +87,8 @@ return {
                     typescript = { "biome", "prettier", stop_after_first = true },
                     typescriptreact = { "biome", "prettier", stop_after_first = true },
 
-                    -- JSON (Biomeを優先)
-                    json = { "biome", "prettier", stop_after_first = true },
+                    -- JSON (jqで常にインデント展開)
+                    json = { "jq" },
                     jsonc = { "biome", "prettier", stop_after_first = true },
 
                     -- Python
@@ -165,6 +165,11 @@ return {
                     sqlfluff = {
                         command = mason_bin .. "sqlfluff",
                         args = { "fix", "--dialect", "postgres", "-" },
+                        stdin = true,
+                    },
+                    jq = {
+                        command = "jq",
+                        args = { "--indent", "4", "." },
                         stdin = true,
                     },
                 },
