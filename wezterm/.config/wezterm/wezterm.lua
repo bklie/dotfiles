@@ -175,8 +175,8 @@ config.keys = {
     { key = "9", mods = mod, action = wezterm.action.ActivateTab(-1) },  -- 最後のタブ
 
     -- タブを左右に移動
-    { key = "[", mods = mod_shift, action = wezterm.action.ActivateTabRelative(-1) },
-    { key = "]", mods = mod_shift, action = wezterm.action.ActivateTabRelative(1) },
+    { key = "h", mods = mod, action = wezterm.action.ActivateTabRelative(-1) },
+    { key = "l", mods = mod, action = wezterm.action.ActivateTabRelative(1) },
 
     -- ================================================
     -- ペイン操作
