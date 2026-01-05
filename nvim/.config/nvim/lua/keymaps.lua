@@ -26,7 +26,40 @@ keymap('n', '<leader>w', function()
         vim.cmd('write')
     end
 end, { desc = 'Save file (prompt if unnamed)' })
-keymap('n', '<leader>q', ':q<CR>', { desc = 'Quit' })
+-- 有効なファイルバッファの数を取得
+local function count_file_buffers()
+    return #vim.tbl_filter(function(b)
+        return vim.bo[b].buflisted and vim.api.nvim_buf_get_name(b) ~= ''
+    end, vim.api.nvim_list_bufs())
+end
+
+keymap('n', '<leader>q', function()
+    local is_unnamed = vim.fn.expand('%') == ''
+    local is_modified = vim.bo.modified
+    local file_buf_count = count_file_buffers()
+    local current_buf = vim.api.nvim_get_current_buf()
+
+    if is_unnamed then
+        -- 無名バッファの場合
+        if file_buf_count == 0 then
+            -- 他にファイルバッファがなければダッシュボードを表示
+            vim.cmd('Alpha')
+            vim.api.nvim_buf_delete(current_buf, { force = true })
+        else
+            vim.cmd('bdelete!')
+        end
+    elseif is_modified then
+        -- 変更がある場合は警告
+        vim.notify('Buffer has unsaved changes', vim.log.levels.WARN)
+    elseif file_buf_count <= 1 then
+        -- 最後のファイルバッファの場合はダッシュボードを表示
+        vim.cmd('Alpha')
+        vim.api.nvim_buf_delete(current_buf, { force = true })
+    else
+        -- 保存済みバッファは削除
+        vim.cmd('bdelete')
+    end
+end, { desc = 'Close buffer (show dashboard if empty)' })
 keymap('n', '<leader>x', ':x<CR>', { desc = 'Save and quit' })
 
 -- 名前を付けて保存（常にプロンプト表示）
