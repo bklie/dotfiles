@@ -16,3 +16,9 @@ vim.opt.wrap = false
 
 -- 相対行番号を有効化（オプション）
 vim.opt.relativenumber = false
+
+-- 折りたたみ設定（treesitterベース）
+vim.opt.foldmethod = "expr"
+vim.opt.foldexpr = "v:lua.vim.treesitter.foldexpr()"
+vim.opt.foldlevel = 99  -- 起動時は全て展開
+vim.opt.foldenable = true

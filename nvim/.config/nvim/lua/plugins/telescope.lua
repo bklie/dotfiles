@@ -4,6 +4,7 @@ return {
         event = "VeryLazy",
         dependencies = {
             "nvim-lua/plenary.nvim",
+            { "nvim-telescope/telescope-fzf-native.nvim", build = "make" },
         },
         config = function()
             local telescope = require("telescope")
@@ -19,7 +20,17 @@ return {
                         bufnr_width = 0,
                     },
                 },
+                extensions = {
+                    fzf = {
+                        fuzzy = true,
+                        override_generic_sorter = true,
+                        override_file_sorter = true,
+                        case_mode = "smart_case",
+                    },
+                },
             })
+
+            telescope.load_extension("fzf")
 
             -- ターミナルを除外したバッファ検索コマンド
             vim.api.nvim_create_user_command("TelescopeBuffersNoTerminal", function()

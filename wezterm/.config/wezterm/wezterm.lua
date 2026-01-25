@@ -215,6 +215,12 @@ config.keys = {
     { key = "f", mods = mod, action = wezterm.action.Search({ CaseSensitiveString = "" }) },
 
     -- ================================================
+    -- スクロールバッファクリア
+    -- ================================================
+    -- docker compose upなどのログをクリア（フォアグラウンドプロセス実行中でも動作）
+    { key = "k", mods = mod, action = wezterm.action.ClearScrollback("ScrollbackAndViewport") },
+
+    -- ================================================
     -- フォントサイズ
     -- ================================================
     { key = "+", mods = mod, action = wezterm.action.IncreaseFontSize },
@@ -238,12 +244,6 @@ config.keys = {
 -- ================================================
 
 config.mouse_bindings = {
-    -- 右クリックでペースト
-    {
-        event = { Down = { streak = 1, button = "Right" } },
-        mods = "NONE",
-        action = wezterm.action.PasteFrom("Clipboard"),
-    },
     -- Cmd/Ctrl + クリックでURLを開く
     {
         event = { Up = { streak = 1, button = "Left" } },

@@ -293,7 +293,7 @@ alias dc='docker compose'
 alias dcu='docker compose up -d'
 alias dcd='docker compose down'
 alias dcl='docker compose logs -f'
-alias dps='docker ps'
+alias dps='docker ps | fzf'
 (( $+commands[docker] )) && compdef d=docker 2>/dev/null
 
 # Neovim
